@@ -1,0 +1,9 @@
+{
+  "name": "cc-gemini-plugin",
+  "version": "1.0.0",
+  "description": "Integrate Gemini CLI for long-context code exploration and analysis",
+  "author": {
+    "name": "pupa"
+  },
+  "keywords": ["gemini", "google", "code-exploration", "analysis", "long-context"]
+}

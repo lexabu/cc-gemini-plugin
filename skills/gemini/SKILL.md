@@ -1,0 +1,217 @@
+---
+name: gemini-integration
+description: This skill provides guidance on using Google's Gemini CLI for long-context code exploration. Use when the user explicitly invokes "/gemini", asks to "use gemini", "run gemini", or when Claude determines that Gemini's massive context window would complement its work on codebase exploration, architecture review, or cross-file analysis.
+allowed-tools: Bash, Glob, Read
+---
+
+# Gemini CLI Integration
+
+Gemini CLI leverages Google's Gemini models with a **1M token context window** - ideal for "satellite view" analysis where you need to see the entire codebase at once.
+
+## When to Use Gemini
+
+### Ideal Cases (Gemini excels)
+
+| Scenario | Why Gemini Wins |
+|----------|-----------------|
+| **Whole-codebase architecture** | See all files simultaneously |
+| **Cross-file security audits** | Trace data flow across many modules |
+| **Refactoring impact analysis** | Find all usages and dependencies at once |
+| **Understanding unfamiliar codebases** | Rapid orientation with full context |
+| **End-to-end flow tracing** | Follow execution paths across files |
+| **Documentation generation** | Synthesize understanding from entire codebase |
+
+### Not Ideal (Use Claude directly)
+
+| Scenario | Why |
+|----------|-----|
+| Quick single-file edits | Overkill, slower |
+| Interactive debugging | Needs back-and-forth |
+| Speed-critical simple tasks | Latency matters |
+| Tasks Claude handles well alone | Unnecessary roundtrip |
+
+## How to Invoke
+
+### Via Slash Command
+```
+/gemini <task>
+/gemini --model gemini-2.5-flash <task>
+/gemini --dirs src,lib <task>
+/gemini --files "**/*.py" <task>
+```
+
+### Via Agent (autonomous)
+Claude can spawn `gemini-agent` automatically for deep exploration tasks.
+
+## CLI Reference
+
+### Headless Mode (for automation)
+
+```bash
+# Basic
+gemini -p "<PROMPT>" --output-format text --yolo 2>&1
+
+# With model
+gemini -p "<PROMPT>" -m gemini-2.5-flash --output-format text --yolo 2>&1
+
+# With directory context
+gemini -p "<PROMPT>" --include-directories src,lib --output-format text --yolo 2>&1
+
+# With file context (piped)
+cat src/**/*.ts | gemini -p "<PROMPT>" --output-format text --yolo 2>&1
+```
+
+### Key Flags
+
+| Flag | Purpose |
+|------|---------|
+| `-p` / `--prompt` | **Required** for headless mode |
+| `--output-format` | `text`, `json`, or `stream-json` |
+| `-m` / `--model` | Model selection |
+| `--include-directories` | Add directories for context |
+| `--yolo` / `-y` | Auto-approve tool actions |
+| `--approval-mode` | `auto_edit` for auto-approval |
+
+### Available Models
+
+| Model | Best For |
+|-------|----------|
+| Auto (default) | System chooses optimal |
+| `gemini-2.5-pro` | Complex reasoning, deep analysis |
+| `gemini-2.5-flash` | Speed, simpler tasks |
+
+## Gemini Prompting Best Practices
+
+Based on Google's Gemini 3 prompting guide:
+
+### Structure Principles
+
+1. **Be direct and specific** - Avoid unnecessary preamble
+2. **Use consistent delimiters** - XML tags (`<task>`, `<context>`) or markdown
+3. **Critical instructions first** - Important constraints at the beginning
+4. **Context → Task → Constraints** - Large blocks first, questions last
+5. **Keep temperature at 1.0** - Don't lower it (degrades performance)
+
+### Prompt Template
+
+```xml
+<context>
+[Source material / files / background]
+</context>
+
+<task>
+[Clear, direct task description]
+</task>
+
+<constraints>
+- Output format requirements
+- What NOT to include
+- Scope limits
+</constraints>
+```
+
+### Code-Specific Prompt Patterns
+
+**Architecture Analysis:**
+```
+<task>Analyze the architecture of this codebase.</task>
+<output>
+1. Main entry points
+2. Core modules and responsibilities
+3. Data flow patterns
+4. Key dependencies
+Format: Markdown with ASCII diagrams where helpful.
+</output>
+```
+
+**Security Audit:**
+```
+<task>Security audit of this codebase.</task>
+<focus>auth bypass, injection, data exposure, access control</focus>
+<output_format>
+`file:line - SEVERITY - issue - recommendation`
+Focus ONLY on confirmed issues. Skip style issues.
+</output_format>
+```
+
+**Refactoring Impact:**
+```
+<task>Analyze impact of refactoring [COMPONENT].</task>
+<analyze>
+1. Current state and responsibilities
+2. What depends on it
+3. What it depends on
+4. Files that need changes
+5. Migration steps
+6. Test plan
+</analyze>
+```
+
+**End-to-End Flow:**
+```
+<task>Trace [FEATURE] flow from start to finish.</task>
+<output>
+For each step:
+- file:line reference
+- What happens
+- Data transformations
+- Next step
+</output>
+```
+
+**Codebase Orientation:**
+```
+<task>I'm new to this codebase. Provide orientation.</task>
+<answer>
+1. What does this project do? (1-2 sentences)
+2. Main entry points
+3. Directory structure overview
+4. Key patterns/abstractions
+5. How to run/test
+</answer>
+```
+
+## Best Practices
+
+### Scope Discipline
+- **Be explicit** about what to focus on
+- **Set boundaries** - "Focus ONLY on X. Skip Y."
+- **Request specific format** - Makes output actionable
+
+### Good vs Weak Prompts
+
+**Good:**
+```
+/gemini --dirs src Analyze error handling. For each: file:line, error type, logged?, recoverable?
+```
+
+**Weak:**
+```
+/gemini check this code
+```
+
+### Combining with Claude
+
+1. **Gemini explores** - Get the satellite view
+2. **Claude synthesizes** - Interpret and act on findings
+3. **Claude executes** - Make actual code changes
+
+## Positioning: Gemini vs Codex vs Claude
+
+| Tool | Metaphor | Strength |
+|------|----------|----------|
+| **Gemini** | Satellite view | 1M context, whole-codebase understanding |
+| **Codex** | Magnifying glass | Sharp detail on specific files |
+| **Claude** | Hands-on engineer | Interactive coding, editing, reasoning |
+
+Use Gemini to see the forest, Codex to examine specific trees, Claude to plant new ones.
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Authentication error | Run `gemini auth` |
+| Rate limiting | Wait, retry with backoff |
+| Token limit exceeded | Narrow scope with `--files` |
+| Timeout | Simplify prompt, reduce context |
+| Missing output | Check `--output-format text` flag |

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "cc-gemini-plugin",
+  "description": "Google Gemini CLI integration for Claude Code - long-context code exploration and analysis",
+  "owner": {
+    "name": "pupa",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "cc-gemini-plugin",
+      "description": "Invoke Google Gemini for long-context code exploration, architecture review, and codebase analysis",
+      "version": "1.0.0",
+      "author": {
+        "name": "pupa"
+      },
+      "source": "./",
+      "category": "integrations",
+      "keywords": ["gemini", "google", "code-exploration", "analysis", "long-context", "architecture"],
+      "homepage": "https://github.com/thepushkarp/cc-gemini-plugin",
+      "repository": "https://github.com/thepushkarp/cc-gemini-plugin"
+    }
+  ]
+}
