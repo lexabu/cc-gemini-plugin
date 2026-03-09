@@ -73,39 +73,45 @@ Gemini's 1M token context window makes it ideal for:
 
 **Basic headless command:**
 ```bash
-gemini -p "<PROMPT>" --output-format text --yolo 2>&1
+gemini "<PROMPT>" --output-format text --approval-mode yolo 2>&1
 ```
 
 **With model override:**
 ```bash
-gemini -p "<PROMPT>" -m <MODEL> --output-format text --yolo 2>&1
+gemini "<PROMPT>" -m <MODEL> --output-format text --approval-mode yolo 2>&1
 ```
 
 **With file context via stdin:**
 ```bash
-cat <FILES> | gemini -p "<PROMPT>" --output-format text --yolo 2>&1
+cat <FILES> | gemini "<PROMPT>" --output-format text --approval-mode yolo 2>&1
 ```
 
 **With directory context:**
 ```bash
-gemini -p "<PROMPT>" --include-directories src,lib --output-format text --yolo 2>&1
+gemini "<PROMPT>" --include-directories src,lib --output-format text --approval-mode yolo 2>&1
+```
+
+**With sandbox:**
+```bash
+gemini "<PROMPT>" --sandbox --output-format text --approval-mode yolo 2>&1
 ```
 
 **Flags explained:**
-- `-p` / `--prompt`: Enables headless mode (required for scripting)
+- Positional argument: Prompt text for headless mode (preferred over `-p`)
 - `--output-format`: Output type - `text` (human readable), `json` (structured), `stream-json` (events)
 - `-m` / `--model`: Model selection (optional)
-- `--yolo` / `-y`: Auto-approve all tool actions (important for automation)
+- `--approval-mode yolo`: Auto-approve all tool actions (important for automation)
 - `--include-directories`: Add directories for context
+- `--sandbox` / `-s`: Run in sandboxed environment
 - `2>&1`: Capture stderr for error handling
 
 ## Available Models
 
 | Option | Description | Models |
 |--------|-------------|--------|
-| Auto (Gemini 3) | Let the system choose the best Gemini 3 model for your task. | gemini-3-pro-preview (if enabled), gemini-3-flash-preview (if enabled) |
+| Auto (Gemini 3) | Let the system choose the best Gemini 3 model for your task. | gemini-3.1-pro-preview (complex tasks), gemini-3-flash (fast tasks) |
 | Auto (Gemini 2.5) | Let the system choose the best Gemini 2.5 model for your task. | gemini-2.5-pro, gemini-2.5-flash |
-| Manual | Select a specific model. | Any available model. |
+| Manual | Select a specific model. | gemini-3.1-pro-preview, gemini-3-flash, gemini-2.5-pro, gemini-2.5-flash, gemini-2.5-flash-lite |
 
 **If the user asks to change the model** (e.g., "use flash", "switch to pro"), add `-m <model>` flag.
 
