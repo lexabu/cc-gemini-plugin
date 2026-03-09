@@ -35,9 +35,10 @@ Gemini CLI leverages Google's Gemini models with a **1M token context window** -
 ### Via Slash Command
 ```
 /gemini <task>
-/gemini --model gemini-3-flash-preview <task>
+/gemini --model gemini-3-flash <task>
 /gemini --dirs src,lib <task>
 /gemini --files "**/*.py" <task>
+/gemini --sandbox <task>
 ```
 
 ### Via Agent (autonomous)
@@ -49,36 +50,44 @@ Claude can spawn `gemini-agent` automatically for deep exploration tasks.
 
 ```bash
 # Basic
-gemini -p "<PROMPT>" --output-format text --yolo 2>&1
+gemini "<PROMPT>" --output-format text --approval-mode yolo 2>&1
 
 # With model
-gemini -p "<PROMPT>" -m gemini-3-flash-preview --output-format text --yolo 2>&1
+gemini "<PROMPT>" -m gemini-3-flash --output-format text --approval-mode yolo 2>&1
 
 # With directory context
-gemini -p "<PROMPT>" --include-directories src,lib --output-format text --yolo 2>&1
+gemini "<PROMPT>" --include-directories src,lib --output-format text --approval-mode yolo 2>&1
 
 # With file context (piped)
-cat src/**/*.ts | gemini -p "<PROMPT>" --output-format text --yolo 2>&1
+cat src/**/*.ts | gemini "<PROMPT>" --output-format text --approval-mode yolo 2>&1
+
+# With sandbox
+gemini "<PROMPT>" --sandbox --output-format text --approval-mode yolo 2>&1
 ```
 
 ### Key Flags
 
 | Flag | Purpose |
 |------|---------|
-| `-p` / `--prompt` | **Required** for headless mode |
-| `--output-format` | `text`, `json`, or `stream-json` |
+| Positional argument | Headless prompt (preferred) |
+| `-p` / `--prompt` | Headless mode prompt (**deprecated**, use positional arg) |
+| `-o` / `--output-format` | `text`, `json`, or `stream-json` |
 | `-m` / `--model` | Model selection |
 | `--include-directories` | Add directories for context |
-| `--yolo` / `-y` | Auto-approve tool actions |
-| `--approval-mode` | `auto_edit` for auto-approval |
+| `--approval-mode` | Tool approval: `default`, `auto_edit`, `yolo`, `plan` |
+| `--yolo` / `-y` | Auto-approve (**deprecated**, use `--approval-mode yolo`) |
+| `-s` / `--sandbox` | Run in sandboxed environment |
+| `-r` / `--resume` | Resume previous session |
+| `-e` / `--extensions` | Enable extensions |
+| `-d` / `--debug` | Debug mode with verbose logging |
 
 ### Available Models
 
 | Option | Description | Models |
 |--------|-------------|--------|
-| Auto (Gemini 3) | Let the system choose the best Gemini 3 model for your task. | gemini-3-pro-preview (if enabled), gemini-3-flash-preview (if enabled) |
+| Auto (Gemini 3) | Let the system choose the best Gemini 3 model for your task. | gemini-3.1-pro (complex tasks), gemini-3-flash (fast tasks) |
 | Auto (Gemini 2.5) | Let the system choose the best Gemini 2.5 model for your task. | gemini-2.5-pro, gemini-2.5-flash |
-| Manual | Select a specific model. | Any available model. |
+| Manual | Select a specific model. | gemini-3.1-pro-preview, gemini-3-flash, gemini-2.5-pro, gemini-2.5-flash, gemini-2.5-flash-lite |
 
 ## Gemini Prompting Best Practices
 

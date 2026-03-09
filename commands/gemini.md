@@ -1,7 +1,7 @@
 ---
 description: Invoke Gemini CLI for long-context code exploration, analysis, and documentation generation
 allowed-tools: Bash, Glob, Read
-argument-hint: "[--model name] [--dirs path,...] [--files pattern] <task>"
+argument-hint: "[--model name] [--dirs path,...] [--files pattern] [--sandbox] <task>"
 ---
 
 # /gemini Command
@@ -15,24 +15,26 @@ Invoke Gemini CLI for long-context code exploration, analysis, and documentation
 /gemini --model <name> <task>
 /gemini --files <pattern> <task>
 /gemini --dirs <path,...> <task>
+/gemini --sandbox <task>
 ```
 
 ## Arguments
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `--model <name>` | Model override | `--model gemini-3-flash-preview` |
+| `--model <name>` | Model override | `--model gemini-3-flash` |
 | `--files <pattern>` | Pipe files matching glob | `--files "src/**/*.ts"` |
 | `--dirs <paths>` | Include directories for context | `--dirs src,lib,tests` |
+| `--sandbox` | Run in sandboxed environment | `--sandbox` |
 | `<task>` | Analysis task or question | (required) |
 
 ## Available Models
 
 | Option | Description | Models |
 |--------|-------------|--------|
-| Auto (Gemini 3) | Let the system choose the best Gemini 3 model for your task. | gemini-3-pro-preview (if enabled), gemini-3-flash-preview (if enabled) |
+| Auto (Gemini 3) | Let the system choose the best Gemini 3 model for your task. | gemini-3.1-pro (complex tasks), gemini-3-flash (fast tasks) |
 | Auto (Gemini 2.5) | Let the system choose the best Gemini 2.5 model for your task. | gemini-2.5-pro, gemini-2.5-flash |
-| Manual | Select a specific model. | Any available model. |
+| Manual | Select a specific model. | gemini-3.1-pro-preview, gemini-3-flash, gemini-2.5-pro, gemini-2.5-flash, gemini-2.5-flash-lite |
 
 ## Execution Instructions
 
@@ -40,44 +42,56 @@ Parse arguments to extract:
 1. `MODEL` - from `--model` flag (optional)
 2. `FILES` - from `--files` flag (optional)
 3. `DIRS` - from `--dirs` flag (optional)
-4. `TASK` - remaining text after parsing
+4. `SANDBOX` - presence of `--sandbox` flag (optional)
+5. `TASK` - remaining text after parsing
 
 ### Command Construction
 
 **Basic (default model):**
 ```bash
-gemini -p "<TASK>" --output-format text --yolo 2>&1
+gemini "<TASK>" --output-format text --approval-mode yolo 2>&1
 ```
 
 **With model override:**
 ```bash
-gemini -p "<TASK>" -m <MODEL> --output-format text --yolo 2>&1
+gemini "<TASK>" -m <MODEL> --output-format text --approval-mode yolo 2>&1
 ```
 
 **With file context (piped):**
 ```bash
-cat <FILES> | gemini -p "<TASK>" --output-format text --yolo 2>&1
+cat <FILES> | gemini "<TASK>" --output-format text --approval-mode yolo 2>&1
 ```
 
 **With directory context:**
 ```bash
-gemini -p "<TASK>" --include-directories <DIRS> --output-format text --yolo 2>&1
+gemini "<TASK>" --include-directories <DIRS> --output-format text --approval-mode yolo 2>&1
 ```
 
 **Combined (model + directories):**
 ```bash
-gemini -p "<TASK>" -m <MODEL> --include-directories <DIRS> --output-format text --yolo 2>&1
+gemini "<TASK>" -m <MODEL> --include-directories <DIRS> --output-format text --approval-mode yolo 2>&1
+```
+
+**With sandbox:**
+```bash
+gemini "<TASK>" --sandbox --output-format text --approval-mode yolo 2>&1
 ```
 
 ### Flag Reference
 
 | Flag | Purpose |
 |------|---------|
-| `-p` / `--prompt` | Headless mode (required for scripting) |
-| `--output-format` | Output: `text`, `json`, `stream-json` |
+| Positional argument | Headless prompt (preferred) |
+| `-p` / `--prompt` | Headless mode prompt (**deprecated**, use positional arg) |
+| `-o` / `--output-format` | Output: `text`, `json`, `stream-json` |
 | `-m` / `--model` | Model selection |
 | `--include-directories` | Add directories for context |
-| `--yolo` / `-y` | Auto-approve tool actions |
+| `--approval-mode` | Tool approval: `default`, `auto_edit`, `yolo`, `plan` |
+| `--yolo` / `-y` | Auto-approve (**deprecated**, use `--approval-mode yolo`) |
+| `-s` / `--sandbox` | Run in sandboxed environment |
+| `-r` / `--resume` | Resume previous session |
+| `-e` / `--extensions` | Enable extensions |
+| `-d` / `--debug` | Debug mode with verbose logging |
 | `2>&1` | Capture stderr |
 
 ## Examples
@@ -86,43 +100,49 @@ gemini -p "<TASK>" -m <MODEL> --include-directories <DIRS> --output-format text 
 ```
 /gemini what is 2+2
 ```
-→ `gemini -p "what is 2+2" --output-format text --yolo 2>&1`
+→ `gemini "what is 2+2" --output-format text --approval-mode yolo 2>&1`
 
 ### Architecture analysis
 ```
 /gemini explain the architecture of this codebase
 ```
-→ `gemini -p "explain the architecture of this codebase" --output-format text --yolo 2>&1`
+→ `gemini "explain the architecture of this codebase" --output-format text --approval-mode yolo 2>&1`
 
 ### With directory context
 ```
 /gemini --dirs src,lib analyze the module structure
 ```
-→ `gemini -p "analyze the module structure" --include-directories src,lib --output-format text --yolo 2>&1`
+→ `gemini "analyze the module structure" --include-directories src,lib --output-format text --approval-mode yolo 2>&1`
 
 ### With file context
 ```
 /gemini --files "src/**/*.ts" summarize the main modules
 ```
-→ `cat src/**/*.ts | gemini -p "summarize the main modules" --output-format text --yolo 2>&1`
+→ `cat src/**/*.ts | gemini "summarize the main modules" --output-format text --approval-mode yolo 2>&1`
 
 ### With model override
 ```
-/gemini --model gemini-3-flash-preview what does this function do
+/gemini --model gemini-3-flash what does this function do
 ```
-→ `gemini -p "what does this function do" -m gemini-3-flash-preview --output-format text --yolo 2>&1`
+→ `gemini "what does this function do" -m gemini-3-flash --output-format text --approval-mode yolo 2>&1`
 
 ### Security review with Pro model
 ```
-/gemini --model gemini-3-pro-preview --dirs src security audit focusing on auth and injection
+/gemini --model gemini-3.1-pro-preview --dirs src security audit focusing on auth and injection
 ```
-→ `gemini -p "security audit focusing on auth and injection" -m gemini-3-pro-preview --include-directories src --output-format text --yolo 2>&1`
+→ `gemini "security audit focusing on auth and injection" -m gemini-3.1-pro-preview --include-directories src --output-format text --approval-mode yolo 2>&1`
 
 ### Documentation generation
 ```
 /gemini --dirs src generate API documentation for all endpoints
 ```
-→ `gemini -p "generate API documentation for all endpoints" --include-directories src --output-format text --yolo 2>&1`
+→ `gemini "generate API documentation for all endpoints" --include-directories src --output-format text --approval-mode yolo 2>&1`
+
+### Sandboxed execution
+```
+/gemini --sandbox --dirs src analyze and test the build pipeline
+```
+→ `gemini "analyze and test the build pipeline" --include-directories src --sandbox --output-format text --approval-mode yolo 2>&1`
 
 ## Prompt Best Practices
 

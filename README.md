@@ -17,7 +17,7 @@ This plugin gives Claude Code access to Google Deepmind's Gemini CLI who's **1M 
 
 1. **Install Gemini CLI**
    ```bash
-   npm install -g @anthropic-ai/gemini-cli
+   npm install -g @google/gemini-cli
    # or
    brew install gemini
    ```
@@ -29,7 +29,7 @@ This plugin gives Claude Code access to Google Deepmind's Gemini CLI who's **1M 
 
 3. **Verify installation**
    ```bash
-   gemini -p "what is 2+2" --output-format text --yolo
+   gemini "what is 2+2" --output-format text --approval-mode yolo
    ```
 
 ## Installation
@@ -55,7 +55,7 @@ Or install directly from the repository:
 /gemini explain the architecture of this codebase
 
 # With specific model
-/gemini --model gemini-3-flash-preview what does this function do
+/gemini --model gemini-3-flash what does this function do
 
 # With directory context
 /gemini --dirs src,lib analyze the module structure
@@ -65,24 +65,28 @@ Or install directly from the repository:
 
 # Documentation generation
 /gemini --dirs src generate API documentation for all endpoints
+
+# Sandboxed execution
+/gemini --sandbox --dirs src analyze and test the build pipeline
 ```
 
 ### Arguments
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `--model <name>` | Model override | `--model gemini-3-flash-preview` |
+| `--model <name>` | Model override | `--model gemini-3-flash` |
 | `--dirs <paths>` | Include directories | `--dirs src,lib` |
 | `--files <pattern>` | Pipe files matching glob | `--files "src/**/*.ts"` |
+| `--sandbox` | Run in sandboxed environment | `--sandbox` |
 | `<task>` | Analysis task | (required) |
 
 ### Available Models
 
 | Option | Description | Models |
 |--------|-------------|--------|
-| Auto (Gemini 3) | Let the system choose the best Gemini 3 model for your task. | gemini-3-pro-preview (if enabled), gemini-3-flash-preview (if enabled) |
+| Auto (Gemini 3) | Let the system choose the best Gemini 3 model for your task. | gemini-3.1-pro (complex tasks), gemini-3-flash (fast tasks) |
 | Auto (Gemini 2.5) | Let the system choose the best Gemini 2.5 model for your task. | gemini-2.5-pro, gemini-2.5-flash |
-| Manual | Select a specific model. | Any available model. |
+| Manual | Select a specific model. | gemini-3.1-pro-preview, gemini-3-flash, gemini-2.5-pro, gemini-2.5-flash, gemini-2.5-flash-lite |
 
 ### Autonomous Agent
 
@@ -126,27 +130,36 @@ The plugin executes Gemini CLI in headless mode:
 
 ```bash
 # Basic
-gemini -p "<PROMPT>" --output-format text --yolo 2>&1
+gemini "<PROMPT>" --output-format text --approval-mode yolo 2>&1
 
 # With model
-gemini -p "<PROMPT>" -m gemini-3-flash-preview --output-format text --yolo 2>&1
+gemini "<PROMPT>" -m gemini-3-flash --output-format text --approval-mode yolo 2>&1
 
 # With directories
-gemini -p "<PROMPT>" --include-directories src,lib --output-format text --yolo 2>&1
+gemini "<PROMPT>" --include-directories src,lib --output-format text --approval-mode yolo 2>&1
 
 # With file context
-cat files | gemini -p "<PROMPT>" --output-format text --yolo 2>&1
+cat files | gemini "<PROMPT>" --output-format text --approval-mode yolo 2>&1
+
+# With sandbox
+gemini "<PROMPT>" --sandbox --output-format text --approval-mode yolo 2>&1
 ```
 
 ### Key Flags
 
 | Flag | Purpose |
 |------|---------|
-| `-p` / `--prompt` | Headless mode (required for scripting) |
-| `--output-format` | `text`, `json`, `stream-json` |
+| Positional argument | Headless prompt (preferred) |
+| `-p` / `--prompt` | Headless mode prompt (**deprecated**, use positional arg) |
+| `-o` / `--output-format` | `text`, `json`, `stream-json` |
 | `-m` / `--model` | Model selection |
 | `--include-directories` | Add directories for context |
-| `--yolo` / `-y` | Auto-approve tool actions |
+| `--approval-mode` | Tool approval: `default`, `auto_edit`, `yolo`, `plan` |
+| `--yolo` / `-y` | Auto-approve (**deprecated**, use `--approval-mode yolo`) |
+| `-s` / `--sandbox` | Run in sandboxed environment |
+| `-r` / `--resume` | Resume previous session |
+| `-e` / `--extensions` | Enable extensions |
+| `-d` / `--debug` | Debug mode with verbose logging |
 
 ## When to Use (and When Not To)
 
