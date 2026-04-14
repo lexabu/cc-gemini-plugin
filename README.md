@@ -52,30 +52,113 @@ gemini -p "what is 2+2" --output-format text
 
 ### Claude Code
 
-Install from the repository:
+This repository is a Claude plugin marketplace because it includes
+`.claude-plugin/marketplace.json`.
+
+Add the marketplace, install the plugin, then reload plugins:
 
 ```bash
-/plugin install https://github.com/thepushkarp/cc-gemini-plugin
+/plugin marketplace add thepushkarp/cc-gemini-plugin
+/plugin install cc-gemini-plugin@cc-gemini-plugin
+/reload-plugins
+```
+
+For a local checkout during development, add the repository path instead of the
+GitHub repo:
+
+```bash
+/plugin marketplace add /absolute/path/to/cc-gemini-plugin
+/plugin install cc-gemini-plugin@cc-gemini-plugin
+/reload-plugins
+```
+
+After pulling marketplace changes, refresh the catalog and reload the plugin:
+
+```bash
+/plugin marketplace update cc-gemini-plugin
+/reload-plugins
+```
+
+If you want collaborators to discover the marketplace automatically when they
+trust the repo, add it to `.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "cc-gemini-plugin": {
+      "source": {
+        "source": "github",
+        "repo": "thepushkarp/cc-gemini-plugin"
+      }
+    }
+  }
+}
 ```
 
 ### Codex
 
-This repo includes both:
+#### In This Repository
+
+This repository already includes:
 - `.codex-plugin/plugin.json`
 - `.agents/plugins/marketplace.json`
 
-That means the repository can act as a local Codex plugin and a repo-local
-marketplace during development.
-
-For a personal Codex install, the documented pattern is:
+That means the repo is already wired as a local Codex plugin and a repo-local
+marketplace. The only requirement is to run Codex from this repository root:
 
 ```bash
-mkdir -p ~/.codex/plugins
-cp -R /absolute/path/to/cc-gemini-plugin ~/.codex/plugins/cc-gemini-plugin
+git clone https://github.com/thepushkarp/cc-gemini-plugin.git
+cd cc-gemini-plugin
+codex
 ```
 
-Then expose it from `~/.agents/plugins/marketplace.json`, or use the repo-local
-marketplace while developing in this repository.
+If Codex was already open before the clone or before a marketplace change,
+restart it so it reloads `.agents/plugins/marketplace.json`.
+
+#### In Every Repository
+
+The easiest personal install is to keep the plugin in
+`~/.codex/plugins/cc-gemini-plugin` and point one personal marketplace entry at
+it.
+
+Clone the plugin into the standard personal plugin directory:
+
+```bash
+mkdir -p ~/.codex/plugins ~/.agents/plugins
+git clone https://github.com/thepushkarp/cc-gemini-plugin.git \
+  ~/.codex/plugins/cc-gemini-plugin
+```
+
+Create `~/.agents/plugins/marketplace.json` with:
+
+```json
+{
+  "name": "personal-plugins",
+  "interface": {
+    "displayName": "Personal Plugins"
+  },
+  "plugins": [
+    {
+      "name": "cc-gemini-plugin",
+      "source": {
+        "source": "local",
+        "path": "./.codex/plugins/cc-gemini-plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
+```
+
+If you already have `~/.agents/plugins/marketplace.json`, add the
+`cc-gemini-plugin` object to its `plugins` array instead of replacing the file.
+
+After editing the marketplace file or updating the plugin directory, restart
+Codex so it reloads the local marketplace.
 
 ## Shared Runtime
 
