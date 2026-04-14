@@ -70,7 +70,7 @@ After installation, use:
 /cc-gemini-plugin:gemini <task>
 ```
 
-After pulling marketplace changes, refresh the catalog and reload the plugin:
+To update the plugin:
 
 ```bash
 /plugin marketplace update cc-gemini-plugin
