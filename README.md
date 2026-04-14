@@ -14,8 +14,8 @@ to Gemini instead of solving everything file-by-file.
 - Shared bridge runtime at `scripts/gemini-bridge.js`
 - Claude Code integration through the plugin manifest, `/cc-gemini-plugin:gemini`
   command, and `gemini-agent`
-- Codex integration through `.codex-plugin/plugin.json`, the shared skill, and marketplace
-  metadata
+- Codex integration through `.codex-plugin/plugin.json`, the packaged bundle in
+  `plugins/cc-gemini-plugin`, the shared skill, and marketplace metadata
 - Bridge coverage in `tests/gemini-bridge.test.js`
 
 ## Use Cases
@@ -53,6 +53,9 @@ gemini -p "what is 2+2" --output-format text
 
 ### Claude Code
 
+This is a user-level install. Once you add the marketplace and install the
+plugin, it stays available in new Claude Code sessions on this machine.
+
 Add the marketplace from GitHub, install the plugin, then reload plugins:
 
 ```bash
@@ -74,38 +77,27 @@ After pulling marketplace changes, refresh the catalog and reload the plugin:
 /reload-plugins
 ```
 
-If you want collaborators to discover the marketplace automatically when they
-trust the repository, add it to `.claude/settings.json`:
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "cc-gemini-plugin": {
-      "source": {
-        "source": "github",
-        "repo": "thepushkarp/cc-gemini-plugin"
-      }
-    }
-  }
-}
-```
-
-For local development, you can add a filesystem path instead of the GitHub
-repository:
-
-```bash
-/plugin marketplace add /absolute/path/to/cc-gemini-plugin
-/plugin install cc-gemini-plugin@cc-gemini-plugin
-/reload-plugins
-```
-
 ### Codex
 
-The easiest personal install is to keep the plugin in
-`~/.codex/plugins/cc-gemini-plugin` and point one personal marketplace entry at
-it.
+This is also a user-level install. Once the plugin is copied into
+`~/.codex/plugins/cc-gemini-plugin` and listed in
+`~/.agents/plugins/marketplace.json`, it is available in new Codex sessions on
+this machine across repositories.
 
-Clone the plugin into your personal Codex plugins directory:
+The shortest path is:
+
+```bash
+npm run install:codex-global
+```
+
+That command copies the packaged Codex bundle into
+`~/.codex/plugins/cc-gemini-plugin` and upserts the marketplace entry in
+`~/.agents/plugins/marketplace.json`.
+
+Restart Codex after the installer finishes.
+
+If you prefer the manual setup, clone the repository into your user plugin
+directory:
 
 ```bash
 mkdir -p ~/.codex/plugins ~/.agents/plugins
@@ -149,11 +141,6 @@ After installation, use the bundled skill:
 ```text
 $gemini-integration
 ```
-
-For local development, the repository also includes `.codex-plugin/plugin.json`
-and `.agents/plugins/marketplace.json`, so a clone can act as a self-contained
-local plugin checkout. Restart Codex after marketplace changes so it reloads the
-local marketplace.
 
 ## Shared Runtime
 
@@ -254,8 +241,23 @@ cc-gemini-plugin/
 │   └── gemini-agent.md
 ├── commands/
 │   └── gemini.md
+├── plugins/
+│   └── cc-gemini-plugin/
+│       ├── .codex-plugin/
+│       │   └── plugin.json
+│       ├── agents/
+│       │   └── openai.yaml
+│       ├── package.json
+│       ├── scripts/
+│       │   └── gemini-bridge.js
+│       └── skills/
+│           └── gemini/
+│               ├── SKILL.md
+│               └── agents/
+│                   └── openai.yaml
 ├── scripts/
-│   └── gemini-bridge.js
+│   ├── gemini-bridge.js
+│   └── install-codex-global.js
 ├── skills/
 │   └── gemini/
 │       ├── SKILL.md

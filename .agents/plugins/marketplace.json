@@ -8,7 +8,7 @@
       "name": "cc-gemini-plugin",
       "source": {
         "source": "local",
-        "path": "./"
+        "path": "./plugins/cc-gemini-plugin"
       },
       "policy": {
         "installation": "AVAILABLE",

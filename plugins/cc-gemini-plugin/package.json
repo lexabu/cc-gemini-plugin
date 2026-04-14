@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "install:codex-global": "node scripts/install-codex-global.js",
     "test": "node --test"
   }
 }
