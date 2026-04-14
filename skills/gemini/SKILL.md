@@ -38,9 +38,9 @@ that should be synthesized in one pass.
 Use the slash command:
 
 ```bash
-/gemini <task>
-/gemini --dirs src,docs <task>
-/gemini --files "schemas/**/*.json" <task>
+/cc-gemini-plugin:gemini <task>
+/cc-gemini-plugin:gemini --dirs src,docs <task>
+/cc-gemini-plugin:gemini --files "schemas/**/*.json" <task>
 ```
 
 Claude can also spawn `gemini-agent` when the task obviously benefits from a

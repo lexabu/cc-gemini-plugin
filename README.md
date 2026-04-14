@@ -3,7 +3,7 @@
 Dual-host Gemini CLI integration for Claude Code and Codex.
 
 The plugin uses one shared Gemini runtime and two thin host adapters:
-- Claude Code exposes `/gemini` and `gemini-agent`.
+- Claude Code exposes `/cc-gemini-plugin:gemini` and `gemini-agent`.
 - Codex exposes the bundled `gemini-integration` skill and plugin manifest.
 
 The plugin gives the host a clean way to hand large, cross-file analysis tasks
@@ -12,7 +12,8 @@ to Gemini instead of solving everything file-by-file.
 ## Architecture
 
 - Shared bridge runtime at `scripts/gemini-bridge.js`
-- Claude Code integration through the plugin manifest, `/gemini` command, and `gemini-agent`
+- Claude Code integration through the plugin manifest, `/cc-gemini-plugin:gemini`
+  command, and `gemini-agent`
 - Codex integration through `.codex-plugin/plugin.json`, the shared skill, and marketplace
   metadata
 - Bridge coverage in `tests/gemini-bridge.test.js`
@@ -63,7 +64,7 @@ Add the marketplace from GitHub, install the plugin, then reload plugins:
 After installation, use:
 
 ```bash
-/gemini <task>
+/cc-gemini-plugin:gemini <task>
 ```
 
 After pulling marketplace changes, refresh the catalog and reload the plugin:
@@ -184,9 +185,9 @@ The bridge:
 Use:
 
 ```bash
-/gemini <task>
-/gemini --dirs src,docs <task>
-/gemini --files "schemas/**/*.json,data/**/*.csv" <task>
+/cc-gemini-plugin:gemini <task>
+/cc-gemini-plugin:gemini --dirs src,docs <task>
+/cc-gemini-plugin:gemini --files "schemas/**/*.json,data/**/*.csv" <task>
 ```
 
 ### Codex
